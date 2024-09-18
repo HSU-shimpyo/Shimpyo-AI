@@ -1,0 +1,35 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.HOST }}               
+        username: ubuntu                       
+        port: 22                               
+        key: ${{ secrets.PRIVATE_KEY }}         # SSH 프라이빗 키
+        script: |
+          # 프로젝트 디렉토리가 있으면 최신 코드로 업데이트, 없으면 새로 클론
+          if [ -d "/home/ubuntu/python-app" ]; then
+            cd /home/ubuntu/python-app
+            git pull origin main
+          else
+            git clone https://github.com/shim-pyoo/python.git /home/ubuntu/python-app
+            cd /home/ubuntu/python-app
+          fi
+
+          # Docker로 애플리케이션 배포
+          docker-compose down  # 기존 컨테이너 중단
+          docker-compose up --build -d  # 최신 코드로 컨테이너 빌드 및 실행
