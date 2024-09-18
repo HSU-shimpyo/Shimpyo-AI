@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy Python Server to EC2
 
 on:
   push:
@@ -21,15 +21,11 @@ jobs:
         port: 22                               
         key: ${{ secrets.PRIVATE_KEY }}         # SSH 프라이빗 키
         script: |
-          # Docker 및 docker-compose 설치
-          if ! command -v docker-compose &> /dev/null
-          then
-            sudo curl -L "https://github.com/docker/compose/releases/download/v2.5.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-          fi
+          # 파이썬 환경 확인 및 가상환경 설치
+          sudo apt-get update
+          sudo apt-get install -y python3-venv python3-pip
 
-          # 프로젝트 디렉토리가 있으면 최신 코드로 업데이트, 없으면 새로 클론
+          # 프로젝트 폴더가 있으면 pull, 없으면 clone
           if [ -d "/home/ubuntu/python-app" ]; then
             cd /home/ubuntu/python-app
             git pull origin main
@@ -38,6 +34,10 @@ jobs:
             cd /home/ubuntu/python-app
           fi
 
-          # Docker로 애플리케이션 배포
-          docker-compose down  # 기존 컨테이너 중단
-          docker-compose up --build -d  # 최신 코드로 컨테이너 빌드 및 실행
+          # 가상환경 설정 및 패키지 설치
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+          # 서버 실행 (백그라운드에서 실행되도록)
+          nohup python my_flask.py &
