@@ -3,6 +3,7 @@
 
 # 오디오 파일 디렉토리 제외
 audio_files/
+uploads/
 
 # Python 관련 기본 ignore
 __pycache__/
