@@ -21,6 +21,14 @@ jobs:
         port: 22                               
         key: ${{ secrets.PRIVATE_KEY }}         # SSH 프라이빗 키
         script: |
+          # Docker 및 docker-compose 설치
+          if ! command -v docker-compose &> /dev/null
+          then
+            sudo curl -L "https://github.com/docker/compose/releases/download/v2.5.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+          fi
+
           # 프로젝트 디렉토리가 있으면 최신 코드로 업데이트, 없으면 새로 클론
           if [ -d "/home/ubuntu/python-app" ]; then
             cd /home/ubuntu/python-app
