@@ -1,6 +1,6 @@
-Flask==2.1.1
-tensorflow==2.10.0
-librosa==0.9.1
-numpy==1.23.0
-pandas==1.4.2
-scikit-learn==1.1.1
+Flask
+tensorflow
+librosa
+numpy
+pandas
+scikit-learn
