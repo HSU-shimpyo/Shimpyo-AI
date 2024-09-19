@@ -1,17 +1,19 @@
-# 베이스 이미지를 설정 (파이썬 3.9 사용)
+# Python 3.9 slim 이미지를 기반으로 설정
 FROM python:3.9-slim
-
-# FFmpeg 설치
-RUN apt-get update && apt-get install -y ffmpeg
 
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# 현재 디렉토리의 파일을 컨테이너로 복사
-COPY . .
+# 필요한 파일들 복사
+COPY requirements.txt requirements.txt
+COPY my_flask.py my_flask.py
+COPY pef_model.py pef_model.py
+COPY pef_prediction_model.h5 pef_prediction_model.h5
+COPY pef_values.csv pef_values.csv
+COPY audio_files/ audio_files/
 
-# 필요한 라이브러리 설치
-RUN pip install -r requirements.txt
+# 패키지 설치
+RUN pip install --no-cache-dir -r requirements.txt
 
-# 서버 실행
-CMD ["python3", "shim.py"]
+# Flask 애플리케이션 실행
+CMD ["python", "my_flask.py"]
