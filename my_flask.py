@@ -10,8 +10,13 @@ logging.basicConfig(filename='app.log', level=logging.INFO, format='%(asctime)s 
 
 app = Flask(__name__)
 
-# 모델 로드
-model = tf.keras.models.load_model('pef_prediction_model.h5')
+# TensorFlow Lite 모델 로드
+interpreter = tf.lite.Interpreter(model_path="pef_prediction_model.tflite")
+interpreter.allocate_tensors()
+
+# 입력 및 출력 텐서 정보 가져오기
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
 # 오디오 파일로부터 특징을 추출
 def extract_features(audio_file, sr=16000):
@@ -21,6 +26,21 @@ def extract_features(audio_file, sr=16000):
     mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
     mfccs_mean = np.mean(mfccs.T, axis=0)
     return mfccs_mean
+
+# TensorFlow Lite 모델을 사용하여 예측 수행
+def predict_pef(features):
+    features = np.array(features, dtype=np.float32)
+    features = np.expand_dims(features, axis=0)
+
+    # 입력 텐서에 데이터 설정
+    interpreter.set_tensor(input_details[0]['index'], features)
+
+    # 예측 실행
+    interpreter.invoke()
+
+    # 출력 텐서에서 예측 결과 가져오기
+    predicted_pef = interpreter.get_tensor(output_details[0]['index'])
+    return float(predicted_pef[0])
 
 # 여러 파일 업로드 처리
 @app.route('/upload', methods=['POST'])
@@ -38,11 +58,9 @@ def upload_files():
             file.save(file_path)
             
             features = extract_features(file_path)
-            features = np.expand_dims(features, axis=0)
             
-            # PEF 예측
-            predicted_pef = model.predict(features)
-            predicted_pef_value = float(predicted_pef[0][0])
+            # TensorFlow Lite 모델을 사용하여 PEF 예측
+            predicted_pef_value = predict_pef(features)
             
             # 로그 기록: 예측 결과 기록
             logging.info(f"Predicted PEF value: {predicted_pef_value} for file: {file.filename}")

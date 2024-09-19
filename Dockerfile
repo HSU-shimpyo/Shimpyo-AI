@@ -1,6 +1,11 @@
 # Python 3.9 slim 이미지를 기반으로 설정
 FROM python:3.9-slim
 
+# 필수 패키지 설치 (TensorFlow Lite 실행에 필요한 기본 패키지)
+RUN apt-get update && apt-get install -y \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
 # 작업 디렉토리 설정
 WORKDIR /app
 
