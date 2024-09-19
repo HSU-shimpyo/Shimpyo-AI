@@ -1,4 +1,4 @@
-name: Deploy Python Server to EC2
+name: Deploy Flask App to EC2
 
 on:
   push:
@@ -6,6 +6,27 @@ on:
       - main
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      run: |
+        docker build -t your_dockerhub_username/flask-app:latest .
+        docker push your_dockerhub_username/flask-app:latest
+
   deploy:
     runs-on: ubuntu-latest
 
@@ -16,28 +37,22 @@ jobs:
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.6
       with:
-        host: ${{ secrets.HOST }}               
-        username: ubuntu                       
-        port: 22                               
-        key: ${{ secrets.PRIVATE_KEY }}         # SSH 프라이빗 키
+        host: ${{ secrets.HOST }}
+        username: ubuntu
+        port: 22
+        key: ${{ secrets.PRIVATE_KEY }}
         script: |
-          # 파이썬 환경 확인 및 가상환경 설치
+          # Docker 설치
           sudo apt-get update
-          sudo apt-get install -y python3-venv python3-pip
-
-          # 프로젝트 폴더가 있으면 pull, 없으면 clone
-          if [ -d "/home/ubuntu/python-app" ]; then
-            cd /home/ubuntu/python-app
-            git pull origin main
-          else
-            git clone https://github.com/shim-pyoo/python.git /home/ubuntu/python-app
-            cd /home/ubuntu/python-app
-          fi
-
-          # 가상환경 설정 및 패키지 설치
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
-
-          # 서버 실행 (백그라운드에서 실행되도록)
-          nohup python my_flask.py &
+          sudo apt-get install -y docker.io
+          
+          # Docker Hub 로그인
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          
+          # 기존 컨테이너 중지 및 삭제
+          docker stop flask-app || true
+          docker rm flask-app || true
+          
+          # 최신 이미지를 받아서 실행
+          docker pull your_dockerhub_username/flask-app:latest
+          docker run -d -p 5001:5001 --name flask-app your_dockerhub_username/flask-app:latest
