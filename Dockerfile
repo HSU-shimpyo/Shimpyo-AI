@@ -10,7 +10,6 @@ COPY my_flask.py my_flask.py
 COPY pef_model.py pef_model.py
 COPY pef_prediction_model.h5 pef_prediction_model.h5
 COPY pef_values.csv pef_values.csv
-COPY audio_files/ audio_files/
 
 # 패키지 설치
 RUN pip install --no-cache-dir -r requirements.txt
