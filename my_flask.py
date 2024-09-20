@@ -10,9 +10,12 @@ logging.basicConfig(filename='app.log', level=logging.INFO, format='%(asctime)s 
 
 app = Flask(__name__)
 
+model_path = os.path.join(os.path.dirname(__file__), 'pef_prediction_model.tflite')
+
 # TensorFlow Lite 모델 로드
-interpreter = tf.lite.Interpreter(model_path="pef_prediction_model.tflite")
+interpreter = tf.lite.Interpreter(model_path=model_path)
 interpreter.allocate_tensors()
+
 
 # 입력 및 출력 텐서 정보 가져오기
 input_details = interpreter.get_input_details()
