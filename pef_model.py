@@ -87,16 +87,6 @@ def train_model(X, y):
     
     return model
 
-# 모델을 TensorFlow Lite로 변환하는 함수
-def convert_to_tflite(model):
-    converter = tf.lite.TFLiteConverter.from_keras_model(model)  # TensorFlow Lite 변환기 생성
-    tflite_model = converter.convert()  # 변환 실행
-
-    # 변환된 모델을 .tflite 파일로 저장
-    with open('pef_prediction_model.tflite', 'wb') as f:
-        f.write(tflite_model)
-    print("TensorFlow Lite 모델이 'pef_prediction_model.tflite'로 저장되었습니다.")
-
 if __name__ == "__main__":
     audio_folder = './audio_files'  # 오디오 파일 폴더
     pef_file = './pef_values.csv'  # PEF 측정값 파일
@@ -110,6 +100,3 @@ if __name__ == "__main__":
     # Keras 모델 저장
     model.save('pef_prediction_model.h5')
     print("Keras 모델이 'pef_prediction_model.h5'로 저장되었습니다.")
-
-    # 모델을 TensorFlow Lite 형식으로 변환하여 저장
-    convert_to_tflite(model)
