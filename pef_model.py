@@ -63,9 +63,10 @@ def prepare_data(audio_folder, pef_file, augment=True):
     
     return np.array(X), np.array(y)
 
-# CNN 모델 정의
+# CNN 모델 정의 (input_shape로 수정)
 def build_model(input_shape):
     model = tf.keras.models.Sequential([
+        # input_shape 사용
         tf.keras.layers.InputLayer(input_shape=input_shape),  
         tf.keras.layers.Dense(128, activation='relu'),
         tf.keras.layers.Dense(64, activation='relu'),
