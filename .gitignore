@@ -22,9 +22,6 @@ __pycache__/
 # 로그 파일 제외
 *.log
 
-# 모델 파일 제외
-pef_prediction_model.h5
-
 # 기타 빌드 관련 파일 제외
 build/
 dist/
