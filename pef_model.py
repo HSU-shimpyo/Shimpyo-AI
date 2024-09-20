@@ -51,14 +51,16 @@ def prepare_data(audio_folder, pef_file, augment=True):
             file_path = os.path.join(audio_folder, audio_file)
             y_data, sr = librosa.load(file_path, sr=16000)
             
+            # 증강 여부 체크
             if augment:
                 augmented_versions = augment_data(y_data, sr)
             else:
                 augmented_versions = [y_data]
 
             for augmented_data in augmented_versions:
-                features = extract_features(file_path)
-                X.append(features)
+                features = librosa.feature.mfcc(y=augmented_data, sr=sr, n_mfcc=13)
+                mfccs_mean = np.mean(features.T, axis=0)
+                X.append(mfccs_mean)
                 y.append(pef_values[audio_file])
     
     return np.array(X), np.array(y)
@@ -66,7 +68,7 @@ def prepare_data(audio_folder, pef_file, augment=True):
 # CNN 모델 정의 (input_shape로 수정)
 def build_model(input_shape):
     model = tf.keras.models.Sequential([
-        # input_shape 사용
+        # batch_shape 대신 input_shape 사용
         tf.keras.layers.InputLayer(input_shape=input_shape),  
         tf.keras.layers.Dense(128, activation='relu'),
         tf.keras.layers.Dense(64, activation='relu'),
@@ -93,13 +95,12 @@ def save_model(model):
     model.save('pef_prediction_model.h5')  # 전체 모델 저장
     print("Keras 모델이 'pef_prediction_model.h5'로 저장되었습니다.")
 
-# 학습 및 저장
 if __name__ == "__main__":
     audio_folder = './audio_files'  # 오디오 파일 폴더 경로
     pef_file = './pef_values.csv'  # PEF 측정값 파일 경로
     
     # 학습 데이터 준비
-    X, y = prepare_data(audio_folder, pef_file, augment=True)
+    X, y = prepare_data(audio_folder, pef_file, augment=True)  # 데이터 증강 포함
     
     # 모델 학습
     model = train_model(X, y)
