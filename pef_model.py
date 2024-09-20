@@ -67,13 +67,14 @@ def prepare_data(audio_folder, pef_file, augment=True):
 # CNN 모델 정의
 def build_model(input_shape):
     model = tf.keras.models.Sequential([
-        tf.keras.layers.InputLayer(input_shape=input_shape),  # InputLayer 수정
+        tf.keras.layers.InputLayer(input_shape=input_shape),  # input_shape로 수정
         tf.keras.layers.Dense(128, activation='relu'),
         tf.keras.layers.Dense(64, activation='relu'),
         tf.keras.layers.Dense(1)  # PEF 값을 회귀로 예측
     ])
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])
     return model
+
 
 # 모델 저장 함수
 def save_model(model):
