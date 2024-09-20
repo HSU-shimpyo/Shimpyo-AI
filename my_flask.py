@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, jsonify
 import numpy as np
 import librosa
-import tensorflow as tf  # tensorflow 사용
+import tensorflow as tf  # TensorFlow 사용
 import logging
 
 # 로그 설정
@@ -10,11 +10,11 @@ logging.basicConfig(filename='app.log', level=logging.INFO, format='%(asctime)s 
 
 app = Flask(__name__)
 
-# TensorFlow 모델 파일 경로
+# 모델 파일 경로 설정
 model_path = os.path.join(os.path.dirname(__file__), 'pef_prediction_model.h5')
 
 # TensorFlow 모델 로드
-model = tf.keras.models.load_model(model_path)  # TensorFlow Keras 모델 로드
+model = tf.keras.models.load_model(model_path)  # 전체 모델 로드
 
 # 오디오 파일로부터 특징을 추출
 def extract_features(audio_file, sr=16000):
