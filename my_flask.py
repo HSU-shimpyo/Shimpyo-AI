@@ -12,8 +12,6 @@ app = Flask(__name__)
 
 # 모델 파일 경로 설정
 model_path = os.path.join(os.path.dirname(__file__), 'pef_model.keras')
-
-# TensorFlow 모델 로드
 model = tf.keras.models.load_model(model_path)
 
 # 오디오 파일로부터 특징을 추출

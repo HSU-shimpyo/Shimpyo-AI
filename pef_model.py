@@ -7,12 +7,15 @@ from sklearn.model_selection import train_test_split
 
 # 오디오 파일로부터 특징을 추출
 def extract_features(audio_file, sr=16000):
-    y, sr = librosa.load(audio_file, sr=sr)
-    
-    # MFCC (Mel Frequency Cepstral Coefficients) 추출
-    mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
-    mfccs_mean = np.mean(mfccs.T, axis=0)
-    return mfccs_mean
+    try:
+        y, sr = librosa.load(audio_file, sr=sr)
+        # MFCC (Mel Frequency Cepstral Coefficients) 추출
+        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
+        mfccs_mean = np.mean(mfccs.T, axis=0)
+        return mfccs_mean
+    except Exception as e:
+        print(f"Error loading {audio_file}: {e}")
+        return None
 
 # PEF 측정값을 로드 (CSV 또는 JSON)
 def load_pef_values(pef_file):
@@ -25,22 +28,8 @@ def load_pef_values(pef_file):
         raise ValueError("지원되지 않는 파일 형식입니다.")
     return pef_dict
 
-# 데이터 증강
-def augment_data(data, sr):
-    # 피치 변경
-    pitch_shifted = librosa.effects.pitch_shift(data, sr=sr, n_steps=2)
-    
-    # 시간 이동
-    time_shifted = np.roll(data, sr // 10)
-    
-    # 소음 추가
-    noise = np.random.randn(len(data)) * 0.005
-    noisy_data = data + noise
-    
-    return [data, pitch_shifted, time_shifted, noisy_data]
-
 # 학습 데이터 준비
-def prepare_data(audio_folder, pef_file, augment=True):
+def prepare_data(audio_folder, pef_file):
     pef_values = load_pef_values(pef_file)
     
     X = []
@@ -49,34 +38,24 @@ def prepare_data(audio_folder, pef_file, augment=True):
     for audio_file in os.listdir(audio_folder):
         if audio_file.endswith('.m4a'):
             file_path = os.path.join(audio_folder, audio_file)
-            y_data, sr = librosa.load(file_path, sr=16000)
-            
-            # 증강 여부 체크
-            if augment:
-                augmented_versions = augment_data(y_data, sr)
-            else:
-                augmented_versions = [y_data]
-
-            for augmented_data in augmented_versions:
-                features = librosa.feature.mfcc(y=augmented_data, sr=sr, n_mfcc=13)
-                mfccs_mean = np.mean(features.T, axis=0)
-                X.append(mfccs_mean)
+            features = extract_features(file_path)
+            if features is not None:
+                X.append(features)
                 y.append(pef_values[audio_file])
     
     return np.array(X), np.array(y)
 
-# CNN 모델 정의
+# 모델 정의
 def build_model(input_shape):
-    model = tf.keras.models.Sequential([
-        tf.keras.layers.InputLayer(input_shape=input_shape),  
-        tf.keras.layers.Dense(128, activation='relu'),
+    model = tf.keras.Sequential([
+        tf.keras.layers.Dense(128, activation='relu', input_shape=input_shape),
         tf.keras.layers.Dense(64, activation='relu'),
         tf.keras.layers.Dense(1)  # PEF 값을 회귀로 예측
     ])
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])
     return model
 
-# 학습 및 평가
+# 모델 학습 및 평가
 def train_model(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
@@ -89,17 +68,18 @@ def train_model(X, y):
     
     return model
 
-# 모델 저장
+
 def save_model(model):
-    model.save('pef_model.keras')  # 전체 모델 저장
-    print("Keras 모델이 'pef_model.keras'로 저장되었습니다.")
+    model.save('pef_model.keras')
+    print("모델이 Keras V3 형식으로 'pef_model.keras'에 저장되었습니다.")
+
 
 if __name__ == "__main__":
-    audio_folder = './audio_files'  # 오디오 파일 폴더 경로
-    pef_file = './pef_values.csv'  # PEF 측정값 파일 경로
+    audio_folder = './audio_files'
+    pef_file = './pef_values.csv'
     
     # 학습 데이터 준비
-    X, y = prepare_data(audio_folder, pef_file, augment=True)  # 데이터 증강 포함
+    X, y = prepare_data(audio_folder, pef_file)
     
     # 모델 학습
     model = train_model(X, y)
