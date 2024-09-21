@@ -65,10 +65,9 @@ def prepare_data(audio_folder, pef_file, augment=True):
     
     return np.array(X), np.array(y)
 
-# CNN 모델 정의 (input_shape로 수정)
+# CNN 모델 정의
 def build_model(input_shape):
     model = tf.keras.models.Sequential([
-        # batch_shape 대신 input_shape 사용
         tf.keras.layers.InputLayer(input_shape=input_shape),  
         tf.keras.layers.Dense(128, activation='relu'),
         tf.keras.layers.Dense(64, activation='relu'),
@@ -92,8 +91,8 @@ def train_model(X, y):
 
 # 모델 저장
 def save_model(model):
-    model.save('pef_prediction_model.h5')  # 전체 모델 저장
-    print("Keras 모델이 'pef_prediction_model.h5'로 저장되었습니다.")
+    model.save('pef_model.h5')  # 전체 모델 저장
+    print("Keras 모델이 'pef_model.h5'로 저장되었습니다.")
 
 if __name__ == "__main__":
     audio_folder = './audio_files'  # 오디오 파일 폴더 경로

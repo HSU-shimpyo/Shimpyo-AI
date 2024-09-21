@@ -11,7 +11,7 @@ logging.basicConfig(filename='app.log', level=logging.INFO, format='%(asctime)s 
 app = Flask(__name__)
 
 # 모델 파일 경로 설정
-model_path = os.path.join(os.path.dirname(__file__), 'pef_prediction_model.h5')
+model_path = os.path.join(os.path.dirname(__file__), 'pef_model.h5')
 
 # TensorFlow 모델 로드
 model = tf.keras.models.load_model(model_path)
@@ -25,7 +25,7 @@ def extract_features(audio_file, sr=16000):
 
 # 예측 수행
 def predict_pef(features):
-    features = np.array(features).reshape(1, -1)  # 배치 차원 추가
+    features = np.array(features).reshape(1, -1)
     prediction = model.predict(features)
     return float(prediction[0][0])
 
