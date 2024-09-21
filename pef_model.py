@@ -91,8 +91,8 @@ def train_model(X, y):
 
 # 모델 저장
 def save_model(model):
-    model.save('pef_model.h5')  # 전체 모델 저장
-    print("Keras 모델이 'pef_model.h5'로 저장되었습니다.")
+    model.save('pef_model.keras')  # 전체 모델 저장
+    print("Keras 모델이 'pef_model.keras'로 저장되었습니다.")
 
 if __name__ == "__main__":
     audio_folder = './audio_files'  # 오디오 파일 폴더 경로
