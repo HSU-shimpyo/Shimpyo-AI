@@ -4,6 +4,10 @@ FROM python:3.9-slim
 # 필수 패키지 설치
 RUN apt-get update && apt-get install -y \
     libsndfile1 \
+    gcc \
+    g++ \
+    libhdf5-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # 작업 디렉토리 설정
