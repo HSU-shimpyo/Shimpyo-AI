@@ -43,7 +43,7 @@ def upload_files():
             
             # 특징 추출 및 예측
             features = extract_features(file_path)
-            predicted_pef_value = predict_pef(features)
+            predicted_pef_value = predict_pef(features) + 240
             
             logging.info(f"Predicted PEF: {predicted_pef_value} for {file.filename}")
             pef_results[f"pef_{idx}"] = predicted_pef_value
