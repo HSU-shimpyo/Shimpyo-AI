@@ -22,9 +22,6 @@ def time_shift(data, shift_max=0.2):
 def my_pitch_shift(data, sr, n_steps):
     return librosa.effects.pitch_shift(data, sr=sr, n_steps=n_steps)
 
-def time_stretch(data, rate):
-    # 속도 조절
-    return librosa.effects.time_stretch(data, rate=rate)
 
 # 오디오 파일로부터 특징을 추출
 def extract_features(y, sr, n_mfcc=13):
@@ -49,6 +46,7 @@ def load_pef_values(pef_file):
     return pef_dict
 
 # 학습 데이터 준비
+# 기존 코드에서 시간 스트레칭 부분 제거
 def prepare_data(audio_folder, pef_file, augment=True):
     pef_values = load_pef_values(pef_file)
     
@@ -78,21 +76,13 @@ def prepare_data(audio_folder, pef_file, augment=True):
                     y_shift = time_shift(y_data)
                     augmented_data_list.append(y_shift)
 
-                    # 3. 피치 변환 (반음 올리기)
-                    y_pitch_up = my_pitch_shift(y_data, sr=sr, n_steps=2)
+                    # # 3. 피치 변환 (반음 올리기)
+                    y_pitch_up = my_pitch_shift(y_data, sr=sr, n_steps=1)
                     augmented_data_list.append(y_pitch_up)
-
+                    
                     # 4. 피치 변환 (반음 내리기)
-                    y_pitch_down = my_pitch_shift(y_data, sr=sr, n_steps=-2)
+                    y_pitch_down = my_pitch_shift(y_data, sr=sr, n_steps=-1)
                     augmented_data_list.append(y_pitch_down)
-
-                    # 5. 속도 조절 (빠르게)
-                    y_speed_up = time_stretch(y_data, rate=1.25)
-                    augmented_data_list.append(y_speed_up)
-
-                    # 6. 속도 조절 (느리게)
-                    y_slow_down = time_stretch(y_data, rate=0.8)
-                    augmented_data_list.append(y_slow_down)
 
                     # 각 증강 데이터에 대해 특징 추출
                     for aug_data in augmented_data_list:
